@@ -18,6 +18,7 @@ import 'package:venera_next/foundation/comic_type.dart';
 import 'package:venera_next/foundation/context.dart';
 import 'package:venera_next/features/local_comics/downloading_page.dart';
 import 'package:venera_next/features/local_comics/local.dart';
+import 'package:venera_next/features/local_comics/local_comic_delete_dialog.dart';
 import 'package:venera_next/foundation/log.dart';
 import 'package:venera_next/features/comic_details/comic_details.dart';
 import 'package:venera_next/features/favorites/favorites.dart';
@@ -525,80 +526,11 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
     bool Function()? isCurrent,
   }) async {
     if (isCurrent?.call() == false) return false;
-    bool isDeleted = false;
-    await showDialog(
-      context: appNavigation.rootContext,
-      builder: (context) {
-        bool removeComicFile = true;
-        bool removeFavoriteAndHistory = true;
-        return StatefulBuilder(
-          builder: (context, state) {
-            return ContentDialog(
-              title: "Delete".tl,
-              content: Column(
-                children: [
-                  CheckboxListTile(
-                    title: Text("Remove local favorite and history".tl),
-                    value: removeFavoriteAndHistory,
-                    onChanged: (v) {
-                      state(() {
-                        removeFavoriteAndHistory = !removeFavoriteAndHistory;
-                      });
-                    },
-                  ),
-                  CheckboxListTile(
-                    title: Text("Also remove files on disk".tl),
-                    value: removeComicFile,
-                    onChanged: (v) {
-                      state(() {
-                        removeComicFile = !removeComicFile;
-                      });
-                    },
-                  ),
-                ],
-              ),
-              actions: [
-                if (comics.length == 1 && comics.first.hasChapters)
-                  TextButton(
-                    child: Text("Delete Chapters".tl),
-                    onPressed: () {
-                      if (isCurrent?.call() == false) {
-                        context.pop();
-                        return;
-                      }
-                      context.pop();
-                      showDeleteChaptersPopWindow(context, comics.first);
-                    },
-                  ),
-                FilledButton(
-                  onPressed: () async {
-                    if (isCurrent?.call() == false) {
-                      context.pop();
-                      return;
-                    }
-                    try {
-                      await LocalManager().batchDeleteComics(
-                        comics,
-                        removeComicFile,
-                        removeFavoriteAndHistory,
-                      );
-                      isDeleted = true;
-                      if (context.mounted) context.pop();
-                    } catch (error) {
-                      if (context.mounted) {
-                        context.showMessage(message: error.toString().tl);
-                      }
-                    }
-                  },
-                  child: Text("Confirm".tl),
-                ),
-              ],
-            );
-          },
-        );
-      },
+    return showLocalComicDeleteDialog(
+      appNavigation.rootContext,
+      comics,
+      isCurrent: isCurrent,
     );
-    return isDeleted;
   }
 
   Future<bool> archiveComics(List<LocalComic> comics) async {
@@ -753,69 +685,4 @@ Future<void> openComicFolder(
       context.showMessage(message: '${"Failed to open folder".tl}: $e');
     }
   }
-}
-
-void showDeleteChaptersPopWindow(BuildContext context, LocalComic comic) {
-  var chapters = <String>[];
-
-  showPopUpWidget(
-    context,
-    PopUpWidgetScaffold(
-      title: "Delete Chapters".tl,
-      body: StatefulBuilder(
-        builder: (context, setState) {
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: comic.downloadedChapters.length,
-                  itemBuilder: (context, index) {
-                    var id = comic.downloadedChapters[index];
-                    var chapter = comic.chapters![id] ?? "Unknown Chapter";
-                    return CheckboxListTile(
-                      title: Text(chapter),
-                      value: chapters.contains(id),
-                      onChanged: (v) {
-                        setState(() {
-                          if (v == true) {
-                            chapters.add(id);
-                          } else {
-                            chapters.remove(id);
-                          }
-                        });
-                      },
-                    );
-                  },
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    FilledButton(
-                      onPressed: () async {
-                        try {
-                          await LocalManager().deleteComicChapters(
-                            comic,
-                            chapters,
-                          );
-                          if (context.mounted) context.pop();
-                        } catch (error) {
-                          if (context.mounted) {
-                            context.showMessage(message: error.toString().tl);
-                          }
-                        }
-                      },
-                      child: Text("Submit".tl),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    ),
-  );
 }

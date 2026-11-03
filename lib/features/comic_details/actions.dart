@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'package:venera_next/components/appbar.dart';
 import 'package:venera_next/components/menu.dart';
+import 'package:venera_next/components/message.dart';
 import 'package:venera_next/components/side_bar.dart';
 import 'package:venera_next/components/window_frame.dart';
 import 'package:venera_next/components/window_selection_task.dart';
@@ -19,6 +20,7 @@ import 'package:venera_next/features/favorites/favorites_api.dart';
 import 'package:venera_next/features/favorites/read_later.dart';
 import 'package:venera_next/features/history/history_api.dart';
 import 'package:venera_next/features/local_comics/local.dart';
+import 'package:venera_next/features/local_comics/local_comic_delete_dialog.dart';
 import 'package:venera_next/features/local_comics/download.dart';
 import 'package:venera_next/features/reader/reader.dart';
 import 'package:venera_next/features/search/search_shortcut.dart';
@@ -373,6 +375,67 @@ abstract mixin class ComicPageActions {
     } finally {
       _choosingDownload = false;
     }
+  }
+
+  Future<void> manageDownload() async {
+    final owner = context;
+    if (!owner.mounted) return;
+    final target = comic;
+    final library = LocalManager();
+    final local = library.find(target.id, target.comicType);
+    if (local == null) {
+      await download();
+      return;
+    }
+    if (library.isDownloading(target.id, target.comicType)) {
+      owner.showMessage(message: "Cancel the download first".tl);
+      return;
+    }
+    await showDialog<void>(
+      context: owner,
+      builder: (dialogContext) {
+        return ContentDialog(
+          title: "Manage download".tl,
+          content: Text("Choose an action for the downloaded files.".tl),
+          actions: [
+            if (local.hasChapters)
+              TextButton(
+                child: Text("Download chapters".tl),
+                onPressed: () {
+                  dialogContext.pop();
+                  download();
+                },
+              ),
+            if (local.hasChapters)
+              TextButton(
+                child: Text("Delete Chapters".tl),
+                onPressed: () {
+                  dialogContext.pop();
+                  showDeleteChaptersPopWindow(owner, local);
+                },
+              ),
+            TextButton(
+              child: Text("Delete all downloads".tl),
+              onPressed: () async {
+                dialogContext.pop();
+                final deleted = await showLocalComicDeleteDialog(
+                  owner,
+                  [local],
+                  initialRemoveFavoriteAndHistory: false,
+                  showRemoveFilesOption: false,
+                  isCurrent: () => owner.mounted && isComicActive(target),
+                );
+                if (deleted && owner.mounted) update();
+              },
+            ),
+            TextButton(
+              child: Text("Cancel".tl),
+              onPressed: () => dialogContext.pop(),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void onTapTag(String tag, String namespace) {

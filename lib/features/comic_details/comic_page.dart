@@ -425,6 +425,7 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
       );
     }
 
+    final localComic = LocalManager().find(comic.id, comic.comicType);
     return SliverLazyToBoxAdapter(
       child: Column(
         children: [
@@ -479,10 +480,14 @@ class _ComicPageState extends LoadingState<ComicPage, ComicDetails>
                 children: [
                   Expanded(
                     child: FilledButton.tonal(
-                      onPressed: download,
+                      onPressed: localComic == null ? download : manageDownload,
                       child: buildMainButtonChild(
-                        Icons.download,
-                        "Download".tl,
+                        localComic == null
+                            ? Icons.download
+                            : Icons.download_done,
+                        localComic == null
+                            ? "Download".tl
+                            : "Manage download".tl,
                       ),
                     ),
                   ),
