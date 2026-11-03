@@ -551,29 +551,6 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
     );
   }
 
-  void removeMissingRecord(LocalComic comic) {
-    showConfirmDialog(
-      context: context,
-      title: "Remove record".tl,
-      content:
-          "The files are missing. Remove only the local record? Files, favorites and history are kept."
-              .tl,
-      confirmText: "Remove record".tl,
-      onConfirm: () async {
-        try {
-          await LocalManager().batchDeleteComics([comic], false, false);
-          if (!mounted) return;
-          missingComics.remove((comic.id, comic.comicType.value));
-          update();
-        } catch (error) {
-          if (mounted) {
-            context.showMessage(message: error.toString().tl);
-          }
-        }
-      },
-    );
-  }
-
   Future<bool> deleteComics(
     List<LocalComic> comics, {
     bool Function()? isCurrent,
@@ -669,6 +646,29 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
       batch: ComicBackupManager.instance.createBackupBatch(comics),
     );
     return result.success > 0;
+  }
+
+  void removeMissingRecord(LocalComic comic) {
+    showConfirmDialog(
+      context: context,
+      title: "Remove record".tl,
+      content:
+          "The files are missing. Remove only the local record? Files, favorites and history are kept."
+              .tl,
+      confirmText: "Remove record".tl,
+      onConfirm: () async {
+        try {
+          await LocalManager().batchDeleteComics([comic], false, false);
+          if (!mounted) return;
+          missingComics.remove((comic.id, comic.comicType.value));
+          update();
+        } catch (error) {
+          if (mounted) {
+            context.showMessage(message: error.toString().tl);
+          }
+        }
+      },
+    );
   }
 
   List<MenuEntry> exportActions(
