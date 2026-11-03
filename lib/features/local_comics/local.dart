@@ -470,6 +470,35 @@ class LocalManager with ChangeNotifier implements DownloadTaskStorage {
   List<LocalComic> getComics(LocalSortType sortType) =>
       _repository.getComics(sortType).map(_rememberComic).toList();
 
+  /// Read-only existence check for the local page. Missing files are reported
+  /// without removing records or touching the filesystem.
+  Future<Set<(String, int)>> missingComicIds() async {
+    _checkNotDisposed();
+    _storageAccess.check();
+    final comics = _repository.getComics(LocalSortType.name);
+    final missing = <(String, int)>{};
+    var next = 0;
+    Future<void> worker() async {
+      while (true) {
+        final index = next++;
+        if (index >= comics.length) return;
+        final comic = comics[index];
+        final directory = Directory(
+          _resolveComicDirectory(comic.directory, path),
+        );
+        final exists = directory is AndroidDirectory
+            ? await directory.exists()
+            : await Directory(directory.path).exists();
+        if (!exists) missing.add((comic.id, comic.comicType.value));
+      }
+    }
+
+    await Future.wait(
+      List.generate(comics.length < 4 ? comics.length : 4, (_) => worker()),
+    );
+    return missing;
+  }
+
   LocalComic _rememberComic(LocalComic comic, {String? id}) {
     final key = (id ?? comic.id, comic.comicType.value);
     var location = _comicDirectories[key];

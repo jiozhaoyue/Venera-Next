@@ -48,6 +48,13 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
 
   Map<LocalComic, bool> selectedComics = {};
 
+  Set<(String, int)> missingComics = {};
+
+  int _missingScanGeneration = 0;
+
+  bool isMissing(LocalComic comic) =>
+      missingComics.contains((comic.id, comic.comicType.value));
+
   List<LocalComic> get visibleComics =>
       comics.where((comic) => isBlocked(comic) == null).toList();
 
@@ -86,14 +93,28 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
     comics = LocalManager().getComics(sortType);
     LocalManager().addListener(update);
     appdata.settings.addListener(onSettingsChanged);
+    _scanMissingComics();
     super.initState();
   }
 
   @override
   void dispose() {
+    _missingScanGeneration++;
     LocalManager().removeListener(update);
     appdata.settings.removeListener(onSettingsChanged);
     super.dispose();
+  }
+
+  Future<void> _scanMissingComics() async {
+    final generation = ++_missingScanGeneration;
+    Set<(String, int)> missing;
+    try {
+      missing = await LocalManager().missingComicIds();
+    } catch (_) {
+      return;
+    }
+    if (!mounted || generation != _missingScanGeneration) return;
+    setState(() => missingComics = missing);
   }
 
   void sort() {
@@ -361,11 +382,15 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
             ),
           SliverGridComics(
             comics: comics,
-            badgeBuilder: (comic) => comic is LocalComic && comic.isIncomplete
-                ? 'Incomplete: @a missing pages'.tlParams({
-                    'a': comic.missingImageCount,
-                  })
-                : null,
+            badgeBuilder: (comic) {
+              if (comic is! LocalComic) return null;
+              if (isMissing(comic)) return 'Files missing'.tl;
+              return comic.isIncomplete
+                  ? 'Incomplete: @a missing pages'.tlParams({
+                      'a': comic.missingImageCount,
+                    })
+                  : null;
+            },
             showHiddenCount: true,
             selections: selectedComics,
             onLongPressed: (c, heroID) {
@@ -397,6 +422,12 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
             },
             menuBuilder: (c) {
               return [
+                if (c is LocalComic && isMissing(c))
+                  MenuEntry(
+                    icon: Icons.link_off,
+                    text: "Remove record".tl,
+                    onClick: () => removeMissingRecord(c),
+                  ),
                 if (c is LocalComic && c.isIncomplete)
                   MenuEntry(
                     icon: Icons.refresh,
@@ -517,6 +548,29 @@ class _LocalComicsPageState extends State<LocalComicsPage> {
         }
       },
       child: body,
+    );
+  }
+
+  void removeMissingRecord(LocalComic comic) {
+    showConfirmDialog(
+      context: context,
+      title: "Remove record".tl,
+      content:
+          "The files are missing. Remove only the local record? Files, favorites and history are kept."
+              .tl,
+      confirmText: "Remove record".tl,
+      onConfirm: () async {
+        try {
+          await LocalManager().batchDeleteComics([comic], false, false);
+          if (!mounted) return;
+          missingComics.remove((comic.id, comic.comicType.value));
+          update();
+        } catch (error) {
+          if (mounted) {
+            context.showMessage(message: error.toString().tl);
+          }
+        }
+      },
     );
   }
 
