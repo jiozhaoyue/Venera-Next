@@ -1,0 +1,3 @@
+{"file": ".trellis/tasks/11-03-error-presentation/research/investigation.md", "reason": "错误展示链路、现有错误类型与日志证据"}
+{"file": "doc/development/logging.zh.md", "reason": "日志保留与导出边界，确保原始错误仍可查看"}
+{"file": "doc/development/source_debugging.zh.md", "reason": "漫画源脚本错误的排查与日志约定"}

@@ -1,0 +1,29 @@
+{
+  "id": "error-presentation",
+  "name": "error-presentation",
+  "title": "报错展示层可读化",
+  "description": "统一 UI 错误出口：把 JS 运行时、网络超时/连接、HTTP 状态、文件缺失、取消等原始报错映射为用户可读文案；日志保留原始错误。最小侵入，不改底层错误类型体系。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "jiozhaoyue",
+  "assignee": "jiozhaoyue",
+  "createdAt": "2026-11-03",
+  "completedAt": null,
+  "branch": "fix/user-facing-errors",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "commit": "df9034e",
+    "pr_url": "https://github.com/CyrilPeng/Venera-Next/pull/140"
+  }
+}

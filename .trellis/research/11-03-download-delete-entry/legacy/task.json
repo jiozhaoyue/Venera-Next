@@ -1,0 +1,28 @@
+{
+  "id": "download-delete-entry",
+  "name": "download-delete-entry",
+  "title": "下载删除入口",
+  "description": "在漫画详情页为已下载漫画提供删除全部下载/删除章节入口，并复用本地页的删除确认与章节选择逻辑；本地页现有入口保留。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "jiozhaoyue",
+  "assignee": "jiozhaoyue",
+  "createdAt": "2026-11-03",
+  "completedAt": null,
+  "branch": "fix/download-delete-entry",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "commit": "f305212"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "local-missing-detection",
+  "name": "local-missing-detection",
+  "title": "本地文件缺失检测与移除记录",
+  "description": "进入本地页后台限并发检查漫画目录是否存在；缺失漫画显示徽标并提供仅删除数据库记录的移除操作，不删除文件、不影响收藏与历史。",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "jiozhaoyue",
+  "assignee": "jiozhaoyue",
+  "createdAt": "2026-11-03",
+  "completedAt": null,
+  "branch": "fix/local-missing-detection",
+  "base_branch": "main",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "commit": "328e2c3"
+  }
+}
