@@ -1,5 +1,7 @@
 # Thinking Guides
 
+- l0-abstract.md — L0 绝对通用规则发放层摘要（真源指向 Harness-repo）
+
 > **Purpose**: Expand your thinking to catch things you might not have considered.
 
 ---
